@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مركز صيانة احمد شيتوس</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', system-ui, sans-serif; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .nav-pills .nav-link { border-radius: 8px; font-weight: 600; padding: 10px 20px; }
+        .nav-pills .nav-link.active { background-color: #0d6efd; }
+        @media print {
+            body * { visibility: hidden; }
+            #printableReceipt, #printableReceipt *, #printableInvoice, #printableInvoice * { visibility: visible; }
+            #printableReceipt, #printableInvoice { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="p-3 p-md-4">
+
+<div class="container-fluid max-w-1200">
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
+        <h3 class="m-0 text-primary fw-bold"><i class="fa-solid fa-microchip me-2"></i>مركز صيانة احمد شيتوس</h3>
+        <span class="badge bg-dark px-3 py-2">v3.1</span>
+    </div>
+
+    <ul class="nav nav-pills mb-4">
+        <li class="nav-item me-2">
+            <button class="nav-link active" onclick="switchTab('devicesTab', this)"><i class="fa-solid fa-wrench me-2"></i>الأجهزة والورشة</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchTab('inventoryTab', this)"><i class="fa-solid fa-boxes-stacked me-2"></i>إدارة المخزون</button>
+        </li>
+    </ul>
+
+    <div id="devicesTab" class="tab-content">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card p-4">
+                    <h5 class="fw-bold mb-3 text-secondary"><i class="fa-solid fa-plus-circle me-2"></i>استلام جهاز جديد</h5>
+                    <form onsubmit="saveTicket(event)">
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold">اسم العميل:</label>
+                            <input type="text" id="custName" class="form-control" required placeholder="أحمد محمود">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold">رقم الهاتف:</label>
+                            <input type="text" id="custPhone" class="form-control" required placeholder="01xxxxxxxxx">
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="form-label small fw-bold">نوع الجهاز:</label>
+                                <input type="text" id="devType" class="form-control" required placeholder="آيفون 13">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold">السيريال:</label>
+                                <input type="text" id="devSerial" class="form-control" placeholder="SN / IMEI">
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold">وصف العطل:</label>
+                            <textarea id="devProblem" class="form-control" rows="2" required placeholder="وصف العطل..."></textarea>
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="form-label small fw-bold">سعر الصيانة (ج.م):</label>
+                                <input type="number" id="repairCost" class="form-control" value="0">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold">سعر قطع الغيار (ج.م):</label>
+                                <input type="number" id="partCost" class="form-control" value="0">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">مدة الصيانة (ساعات):</label>
+                            <input type="number" id="estHours" class="form-control" value="2" min="1" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2"><i class="fa-solid fa-save me-2"></i>تسجيل الجهاز</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card p-4">
+                    <h5 class="fw-bold mb-3 text-secondary"><i class="fa-solid fa-list-check me-2"></i>الأجهزة الحالية بالورشة</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>الطلب والعميل</th>
+                                    <th>تاريخ الاستلام</th>
+                                    <th>الحسابات والوقت</th>
+                                    <th>تعديل الحالة</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ticketsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="inventoryTab" class="tab-content d-none">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card p-4">
+                    <h5 id="invTitle" class="fw-bold mb-3 text-secondary">إضافة قطعة جديدة</h5>
+                    <form onsubmit="handleInventory(event)">
+                        <input type="hidden" id="invId">
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold">اسم القطعة:</label>
+                            <input type="text" id="invName" class="form-control" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold">الكمية:</label>
+                            <input type="number" id="invQty" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">السعر (ج.م):</label>
+                            <input type="number" step="0.01" id="invPrice" class="form-control" required>
+                        </div>
+                        <button type="submit" id="invBtn" class="btn btn-success w-100 fw-bold">حفظ القطعة</button>
+                        <button type="button" id="invCancel" class="btn btn-secondary w-100 mt-2 d-none" onclick="resetInvForm()">إلغاء التعديل</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card p-4">
+                    <h5 class="fw-bold mb-3 text-secondary">قطع الغيار المتوفرة</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>اسم القطعة</th>
+                                    <th>الكمية</th>
+                                    <th>السعر</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal إيصال الاستلام (Printable) -->
+<div class="modal fade" id="receiptModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-4" id="printableReceipt">
+            <div class="text-center border-bottom pb-3 mb-3">
+                <h3 class="fw-bold text-primary m-0"><i class="fa-solid fa-microchip me-2"></i>إيصال استلام جهاز</h3>
+                <small class="text-muted">مركز صيانة احمد شيتوس</small>
+            </div>
+            <div class="row mb-3 small">
+                <div class="col-6"><strong>رقم الطلب:</strong> <span id="recOrderCode"></span></div>
+                <div class="col-6 text-end"><strong>التاريخ:</strong> <span id="recDate"></span></div>
+                <div class="col-12 mt-1"><strong>اسم العميل:</strong> <span id="recCustName"></span></div>
+                <div class="col-12"><strong>رقم الهاتف:</strong> <span id="recCustPhone"></span></div>
+                <div class="col-12"><strong>الجهاز:</strong> <span id="recDevType"></span></div>
+                <div class="col-12"><strong>العطل:</strong> <span id="recProblem"></span></div>
+                <!-- إضافة سعر الصيانة والإجمالي هنا -->
+                <div class="col-6 mt-1 text-primary fw-bold"><strong>تكلفة الصيانة:</strong> <span id="recRepairCost"></span> ج.م</div>
+                <div class="col-6 mt-1 text-success fw-bold text-end"><strong>التكلفة الإجمالية:</strong> <span id="recTotalCost"></span> ج.م</div>
+            </div>
+            
+            <div class="text-center border p-2 rounded my-2 bg-light">
+                <p class="mb-1 fw-bold small text-secondary">مسح الـ QR لمتابعة حالة الصيانة المباشرة:</p>
+                <div id="receiptQrCode" class="d-flex justify-content-center my-2"></div>
+            </div>
+
+            <!-- QR Social Media / Review -->
+            <div class="row text-center mt-3 pt-2 border-top small">
+                <div class="col-6">
+                    <i class="fa-brands fa-tiktok text-dark fs-5 d-block mb-1"></i>
+                    <div id="tiktokQr" class="d-flex justify-content-center my-1"></div>
+                    <small>تابعنا على TikTok</small>
+                </div>
+                <div class="col-6">
+                    <i class="fa-brands fa-facebook text-primary fs-5 d-block mb-1"></i>
+                    <div id="facebookQr" class="d-flex justify-content-center my-1"></div>
+                    <small>تابعنا على Facebook</small>
+                </div>
+            </div>
+
+            <div class="text-center mt-3 no-print">
+                <button onclick="window.print()" class="btn btn-primary fw-bold px-4 me-2"><i class="fa-solid fa-print me-2"></i>طباعة الإيصال</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal الفاتورة Printable -->
+<div class="modal fade" id="invoiceModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-4" id="printableInvoice">
+            <div class="text-center border-bottom pb-3 mb-3">
+                <h3 class="fw-bold text-primary m-0"><i class="fa-solid fa-microchip me-2"></i>فاتورة صيانة</h3>
+                <small class="text-muted">مركز صيانة احمد شيتوس</small>
+            </div>
+            <div class="row mb-3 small">
+                <div class="col-6"><strong>رقم الطلب:</strong> <span id="invOrderCode"></span></div>
+                <div class="col-6 text-end"><strong>التاريخ:</strong> <span id="invDate"></span></div>
+                <div class="col-12 mt-1"><strong>اسم العميل:</strong> <span id="invCustName"></span></div>
+                <div class="col-12"><strong>رقم الهاتف:</strong> <span id="invCustPhone"></span></div>
+                <div class="col-12"><strong>الجهاز:</strong> <span id="invDevType"></span></div>
+            </div>
+            <table class="table table-bordered mb-3 small">
+                <thead class="table-light">
+                    <tr>
+                        <th>البيان</th>
+                        <th class="text-end">التكلفة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>تكلفة مصناعية الصيانة</td>
+                        <td class="text-end"><span id="invRepairCost"></span> ج.م</td>
+                    </tr>
+                    <tr>
+                        <td>تكلفة قطع الغيار المستخدمة</td>
+                        <td class="text-end"><span id="invPartCost"></span> ج.م</td>
+                    </tr>
+                    <tr class="table-active fw-bold">
+                        <td>الإجمالي الكلي</td>
+                        <td class="text-end"><span id="invTotalCost"></span> ج.م</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="text-center mt-3 no-print">
+                <button onclick="window.print()" class="btn btn-primary fw-bold px-4 me-2"><i class="fa-solid fa-print me-2"></i>طباعة الفاتورة</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal الـ QR Code للعرض المباشر -->
+<div class="modal fade" id="qrModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-4">
+            <h4 class="fw-bold text-primary mb-2">QR Code متابعة الجهاز</h4>
+            <div id="modalQrCode" class="d-flex justify-content-center my-3"></div>
+            <h5 class="fw-bold mt-2" id="modalOrderNum"></h5>
+            <button type="button" class="btn btn-dark mt-3" data-bs-dismiss="modal">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let qrModalObj, invoiceModalObj, receiptModalObj;
+    
+    const TIKTOK_URL = "https://www.tiktok.com/@ahmedshitoes?_r=1&_t=ZS-98ZwbImFbnR";
+    const FACEBOOK_URL = "https://www.facebook.com/share/1Eub5wACgY/?mibextid=wwXIfr";
+
+    document.addEventListener("DOMContentLoaded", () => {
+        qrModalObj = new bootstrap.Modal(document.getElementById('qrModal'));
+        invoiceModalObj = new bootstrap.Modal(document.getElementById('invoiceModal'));
+        receiptModalObj = new bootstrap.Modal(document.getElementById('receiptModal'));
+    });
+
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('d-none'));
+        document.querySelectorAll('.nav-pills .nav-link').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.remove('d-none');
+        btn.classList.add('active');
+    }
+
+    function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        return d.toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' });
+    }
+
+    async function loadTickets() {
+        try {
+            const res = await fetch('/api/tickets');
+            const data = await res.json();
+            const tbody = document.getElementById('ticketsTable');
+            tbody.innerHTML = '';
+            data.forEach(t => {
+                const displayCode = t.orderCode || `#ORD-${t.id}`;
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-primary">${displayCode}</div>
+                            <div class="fw-bold small">${t.customerName} (${t.phone})</div>
+                            <small class="badge bg-light text-dark">${t.deviceType}</small>
+                        </td>
+                        <td>
+                            <div class="small fw-bold"><i class="fa-regular fa-calendar me-1"></i>${formatDate(t.createdAt)}</div>
+                        </td>
+                        <td>
+                            <div class="row g-1 mb-1">
+                                <div class="col-6"><input type="number" id="rCost-${t.id}" value="${t.repairCost || 0}" class="form-control form-control-sm" placeholder="صيانة"></div>
+                                <div class="col-6"><input type="number" id="pCost-${t.id}" value="${t.partCost || 0}" class="form-control form-control-sm" placeholder="قطع"></div>
+                            </div>
+                            <div class="small fw-bold text-success mb-1">الإجمالي: ${t.totalCost || 0} ج.م</div>
+                            <div class="input-group input-group-sm mb-1">
+                                <span class="input-group-text">ساعات:</span>
+                                <input type="number" id="hrs-${t.id}" value="${t.estimatedHours}" class="form-control">
+                            </div>
+                        </td>
+                        <td>
+                            <select id="status-${t.id}" class="form-select form-select-sm mb-1">
+                                <option value="قيد الانتظار" ${t.status === 'قيد الانتظار' ? 'selected' : ''}>قيد الانتظار</option>
+                                <option value="جاري الصيانة" ${t.status === 'جاري الصيانة' ? 'selected' : ''}>جاري الصيانة</option>
+                                <option value="جاهز للتسليم" ${t.status === 'جاهز للتسليم' ? 'selected' : ''}>جاهز للتسليم</option>
+                                <option value="تم التسليم" ${t.status === 'تم التسليم' ? 'selected' : ''}>تم التسليم</option>
+                                <option value="رفض" ${t.status === 'رفض' ? 'selected' : ''}>رفض</option>
+                                <option value="إنهاء واختفاء" ${t.status === 'إنهاء واختفاء' ? 'selected' : ''}>إنهاء واختفاء</option>
+                            </select>
+                            <input type="text" id="notes-${t.id}" value="${t.techNotes || ''}" placeholder="ملاحظة..." class="form-control form-control-sm mb-1">
+                            <button onclick="updateTicket(${t.id})" class="btn btn-sm btn-outline-primary w-100">تحديث</button>
+                        </td>
+                        <td>
+                            <button onclick="showReceiptModal(${JSON.stringify(t).replace(/"/g, '&quot;')})" class="btn btn-sm btn-dark w-100 mb-1"><i class="fa-solid fa-receipt"></i> إيصال QR</button>
+                            <button onclick='showInvoice(${JSON.stringify(t)})' class="btn btn-sm btn-success w-100"><i class="fa-solid fa-file-invoice"></i> فاتورة</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch(err) {
+            console.error('خطأ في جلب البيانات:', err);
+        }
+    }
+
+    async function saveTicket(e) {
+        e.preventDefault();
+        const ticket = {
+            customerName: document.getElementById('custName').value,
+            phone: document.getElementById('custPhone').value,
+            deviceType: document.getElementById('devType').value,
+            deviceSerial: document.getElementById('devSerial').value,
+            problem: document.getElementById('devProblem').value,
+            repairCost: document.getElementById('repairCost').value,
+            partCost: document.getElementById('partCost').value,
+            estimatedHours: document.getElementById('estHours').value
+        };
+
+        const res = await fetch('/api/tickets', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(ticket)
+        });
+
+        if (res.ok) {
+            e.target.reset();
+            document.getElementById('repairCost').value = 0;
+            document.getElementById('partCost').value = 0;
+            document.getElementById('estHours').value = 2;
+            loadTickets();
+        }
+    }
+
+    async function updateTicket(id) {
+        const status = document.getElementById(`status-${id}`).value;
+        const estimatedHours = document.getElementById(`hrs-${id}`).value;
+        const techNotes = document.getElementById(`notes-${id}`).value;
+        const repairCost = document.getElementById(`rCost-${id}`).value;
+        const partCost = document.getElementById(`pCost-${id}`).value;
+
+        await fetch(`/api/tickets/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ status, estimatedHours, techNotes, repairCost, partCost })
+        });
+        alert('تم تحديث البيانات!');
+        loadTickets();
+    }
+
+    function showReceiptModal(ticket) {
+        const displayCode = ticket.orderCode || `#ORD-${ticket.id}`;
+        document.getElementById('recOrderCode').innerText = displayCode;
+        document.getElementById('recDate').innerText = formatDate(ticket.createdAt);
+        document.getElementById('recCustName').innerText = ticket.customerName;
+        document.getElementById('recCustPhone').innerText = ticket.phone;
+        document.getElementById('recDevType').innerText = ticket.deviceType;
+        document.getElementById('recProblem').innerText = ticket.problem;
+        
+        // عرض تكلفة الصيانة والإجمالي في الإيصال
+        document.getElementById('recRepairCost').innerText = ticket.repairCost || 0;
+        document.getElementById('recTotalCost').innerText = ticket.totalCost || 0;
+
+        const recQrDiv = document.getElementById('receiptQrCode');
+        recQrDiv.innerHTML = '';
+        const statusUrl = `${window.location.origin}/status.html?order=${ticket.id}`;
+        new QRCode(recQrDiv, { text: statusUrl, width: 120, height: 120 });
+
+        const ttDiv = document.getElementById('tiktokQr');
+        const fbDiv = document.getElementById('facebookQr');
+        ttDiv.innerHTML = '';
+        fbDiv.innerHTML = '';
+        new QRCode(ttDiv, { text: TIKTOK_URL, width: 70, height: 70 });
+        new QRCode(fbDiv, { text: FACEBOOK_URL, width: 70, height: 70 });
+
+        receiptModalObj.show();
+    }
+
+    function showInvoice(ticket) {
+        document.getElementById('invOrderCode').innerText = ticket.orderCode || `#ORD-${ticket.id}`;
+        document.getElementById('invDate').innerText = formatDate(ticket.createdAt);
+        document.getElementById('invCustName').innerText = ticket.customerName;
+        document.getElementById('invCustPhone').innerText = ticket.phone;
+        document.getElementById('invDevType').innerText = ticket.deviceType;
+        document.getElementById('invRepairCost').innerText = ticket.repairCost || 0;
+        document.getElementById('invPartCost').innerText = ticket.partCost || 0;
+        document.getElementById('invTotalCost').innerText = ticket.totalCost || 0;
+        invoiceModalObj.show();
+    }
+
+    // المخزون
+    async function loadInventory() {
+        const res = await fetch('/api/inventory');
+        const data = await res.json();
+        const tbody = document.getElementById('inventoryTable');
+        tbody.innerHTML = '';
+        data.forEach(item => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.id}</td>
+                    <td class="fw-bold">${item.name}</td>
+                    <td><span class="badge bg-secondary">${item.quantity}</span></td>
+                    <td>${item.price} ج.م</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-1" onclick="editInv(${item.id}, '${item.name}', ${item.quantity}, ${item.price})">تعديل</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteInv(${item.id})">حذف</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    async function handleInventory(e) {
+        e.preventDefault();
+        const id = document.getElementById('invId').value;
+        const item = {
+            name: document.getElementById('invName').value,
+            quantity: document.getElementById('invQty').value,
+            price: document.getElementById('invPrice').value
+        };
+
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `/api/inventory/${id}` : '/api/inventory';
+
+        await fetch(url, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(item)
+        });
+
+        resetInvForm();
+        loadInventory();
+    }
+
+    function editInv(id, name, qty, price) {
+        document.getElementById('invId').value = id;
+        document.getElementById('invName').value = name;
+        document.getElementById('invQty').value = qty;
+        document.getElementById('invPrice').value = price;
+        document.getElementById('invTitle').innerText = 'تعديل قطعة مخزون';
+        document.getElementById('invBtn').innerText = 'حفظ التعديل';
+        document.getElementById('invCancel').classList.remove('d-none');
+    }
+
+    async function deleteInv(id) {
+        if (confirm('هل أنت تأكد من الحذف؟')) {
+            await fetch(`/api/inventory/${id}`, { method: 'DELETE' });
+            loadInventory();
+        }
+    }
+
+    function resetInvForm() {
+        document.getElementById('invId').value = '';
+        document.getElementById('invName').value = '';
+        document.getElementById('invQty').value = '';
+        document.getElementById('invPrice').value = '';
+        document.getElementById('invTitle').innerText = 'إضافة قطعة جديدة';
+        document.getElementById('invBtn').innerText = 'حفظ القطعة';
+        document.getElementById('invCancel').classList.add('d-none');
+    }
+
+    loadTickets();
+    loadInventory();
+</script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تتبع حالة الجهاز المباشرة</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; font-family: 'Segoe UI', system-ui; }
+        .status-card { border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .timer-box { background: #eef2ff; border-radius: 12px; padding: 15px; }
+        .timer-num { font-size: 2rem; font-weight: bold; color: #1e3c72; }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center p-3">
+
+<div class="container" style="max-width: 500px;">
+    <div class="card status-card bg-white p-4 text-center">
+        <div class="mb-3">
+            <i class="fa-solid fa-mobile-screen-button fs-1 text-primary"></i>
+            <h4 class="fw-bold mt-2">تتبع حالة الصيانة</h4>
+        </div>
+        
+        <div id="loading">
+            <div class="spinner-border text-primary my-4"></div>
+            <p class="text-muted">جاري تحميل البيانات...</p>
+        </div>
+
+        <div id="content" class="d-none">
+            <span id="orderBadge" class="badge bg-primary fs-6 mb-3"></span>
+            
+            <div class="text-start border rounded p-3 mb-3 bg-light">
+                <p class="mb-1"><strong><i class="fa-solid fa-user me-2 text-secondary"></i> العميل:</strong> <span id="cName"></span></p>
+                <p class="mb-1"><strong><i class="fa-solid fa-phone me-2 text-secondary"></i> الهاتف:</strong> <span id="cPhone"></span></p>
+                <p class="mb-1"><strong><i class="fa-solid fa-laptop me-2 text-secondary"></i> الجهاز:</strong> <span id="cDev"></span></p>
+                <p class="mb-1"><strong><i class="fa-solid fa-barcode me-2 text-secondary"></i> سيريال/SN:</strong> <span id="cSerial"></span></p>
+                <p class="mb-1"><strong><i class="fa-solid fa-calendar-check me-2 text-secondary"></i> وقت الاستلام:</strong> <span id="cCreated" class="fw-bold text-dark"></span></p>
+                <p class="mb-1"><strong><i class="fa-solid fa-triangle-exclamation me-2 text-secondary"></i> العطل:</strong> <span id="cProb"></span></p>
+                <p class="mb-0 text-success fw-bold"><strong><i class="fa-solid fa-receipt me-2"></i> التكلفة الإجمالية:</strong> <span id="cTotal"></span> ج.م</p>
+            </div>
+
+            <div class="my-3">
+                <h6 class="fw-bold text-muted">حالة الجهاز الحالية:</h6>
+                <div id="statusBox" class="p-3 rounded fw-bold fs-5 my-2"></div>
+            </div>
+
+            <div id="timerContainer" class="timer-box my-3 d-none">
+                <h6 class="fw-bold text-dark mb-1"><i class="fa-regular fa-clock me-1"></i> موعد التسليم المتوقع:</h6>
+                <div id="deliveryDate" class="fw-bold text-primary mb-2"></div>
+                <div class="d-flex justify-content-center align-items-center gap-3">
+                    <div>
+                        <div id="timerHours" class="timer-num">00</div>
+                        <small class="text-muted">ساعة</small>
+                    </div>
+                    <span class="fs-3 fw-bold">:</span>
+                    <div>
+                        <div id="timerMinutes" class="timer-num">00</div>
+                        <small class="text-muted">دقيقة</small>
+                    </div>
+                </div>
+            </div>
+
+            <div id="notesBox" class="alert alert-info d-none text-start mt-3">
+                <i class="fa-solid fa-comment-dots me-2"></i><strong>ملاحظة من الورشة:</strong>
+                <p id="notesText" class="mb-0 mt-1 small"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function formatDate(dateObj) {
+        return dateObj.toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'short' });
+    }
+
+    async function fetchStatus() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('order');
+
+        if (!orderId) {
+            document.getElementById('loading').innerHTML = '<div class="alert alert-danger">رقم الطلب غير صحيح!</div>';
+            return;
+        }
+
+        const res = await fetch(`/api/tickets/${orderId}`);
+        const ticket = await res.json();
+
+        if (!ticket || !ticket.id) {
+            document.getElementById('loading').innerHTML = '<div class="alert alert-warning">لم يتم العثور على الجهاز!</div>';
+            return;
+        }
+
+        document.getElementById('loading').classList.add('d-none');
+        document.getElementById('content').classList.remove('d-none');
+
+        document.getElementById('orderBadge').innerText = `طلب رقم: ${ticket.orderCode || '#ORD-' + ticket.id}`;
+        document.getElementById('cName').innerText = ticket.customerName;
+        document.getElementById('cPhone').innerText = ticket.phone;
+        document.getElementById('cDev').innerText = ticket.deviceType;
+        document.getElementById('cSerial').innerText = ticket.deviceSerial || 'غير محدد';
+        document.getElementById('cProb').innerText = ticket.problem;
+        document.getElementById('cTotal').innerText = ticket.totalCost || 0;
+
+        const createdDate = new Date(ticket.createdAt);
+        document.getElementById('cCreated').innerText = formatDate(createdDate);
+
+        const statusBox = document.getElementById('statusBox');
+        if (ticket.status === 'قيد الانتظار') {
+            statusBox.className = 'p-3 rounded fw-bold fs-5 bg-secondary text-white';
+            statusBox.innerText = '⏳ قيد الانتظار في الورشة';
+            setupTimer(createdDate, ticket.estimatedHours);
+        } else if (ticket.status === 'جاري الصيانة') {
+            statusBox.className = 'p-3 rounded fw-bold fs-5 bg-warning text-dark';
+            statusBox.innerText = '🛠️ جاري الصيانة الآن';
+            setupTimer(createdDate, ticket.estimatedHours);
+        } else if (ticket.status === 'جاهز للتسليم') {
+            statusBox.className = 'p-3 rounded fw-bold fs-5 bg-success text-white';
+            statusBox.innerText = '✅ الجهاز جاهز للتسليم!';
+        } else if (ticket.status === 'تم التسليم' || ticket.status === 'إنهاء واختفاء') {
+            statusBox.className = 'p-3 rounded fw-bold fs-5 bg-dark text-white';
+            statusBox.innerText = '🎉 تم استلام الجهاز بنجاح. شكراً لك!';
+        } else if (ticket.status === 'رفض') {
+            statusBox.className = 'p-3 rounded fw-bold fs-5 bg-danger text-white';
+            statusBox.innerText = '❌ تعذر/تم رفض الصيانة';
+        }
+
+        if (ticket.techNotes) {
+            document.getElementById('notesBox').classList.remove('d-none');
+            document.getElementById('notesText').innerText = ticket.techNotes;
+        }
+    }
+
+    function setupTimer(createdDate, hours) {
+        if (!hours || hours <= 0) return;
+        document.getElementById('timerContainer').classList.remove('d-none');
+
+        const startTime = createdDate.getTime();
+        const endTime = startTime + (hours * 60 * 60 * 1000);
+        const expectedDelivery = new Date(endTime);
+
+        document.getElementById('deliveryDate').innerText = formatDate(expectedDelivery);
+
+        function update() {
+            const now = new Date().getTime();
+            const diff = endTime - now;
+
+            if (diff <= 0) {
+                document.getElementById('timerHours').innerText = '00';
+                document.getElementById('timerMinutes').innerText = '00';
+                return;
+            }
+
+            const hrs = Math.floor(diff / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            document.getElementById('timerHours').innerText = hrs < 10 ? '0' + hrs : hrs;
+            document.getElementById('timerMinutes').innerText = mins < 10 ? '0' + mins : mins;
+        }
+
+        update();
+        setInterval(update, 30000);
+    }
+
+    fetchStatus();
+</script>
+</body>
+</html>
