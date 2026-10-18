@@ -30,6 +30,7 @@ async function initDb() {
             phone TEXT,
             deviceType TEXT,
             deviceSerial TEXT,
+            techName TEXT DEFAULT 'غير محدد',
             problem TEXT,
             status TEXT DEFAULT 'قيد الانتظار',
             estimatedHours INTEGER DEFAULT 2,
@@ -114,7 +115,7 @@ app.get('/api/tickets/:id', async (req, res) => {
 });
 
 app.post('/api/tickets', async (req, res) => {
-    const { customerName, phone, deviceType, deviceSerial, problem, estimatedHours, repairCost, partCost } = req.body;
+    const { customerName, phone, deviceType, deviceSerial, techName, problem, estimatedHours, repairCost, partCost } = req.body;
     const orderCode = generateOrderCode();
     const rCost = Number(repairCost) || 0;
     const pCost = Number(partCost) || 0;
@@ -122,8 +123,8 @@ app.post('/api/tickets', async (req, res) => {
 
     try {
         const result = await db.execute({
-            sql: `INSERT INTO tickets (orderCode, customerName, phone, deviceType, deviceSerial, problem, estimatedHours, repairCost, partCost, totalCost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            args: [orderCode, customerName, phone, deviceType, deviceSerial || 'غير محدد', problem, Number(estimatedHours) || 2, rCost, pCost, totalCost]
+            sql: `INSERT INTO tickets (orderCode, customerName, phone, deviceType, deviceSerial, techName, problem, estimatedHours, repairCost, partCost, totalCost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            args: [orderCode, customerName, phone, deviceType, deviceSerial || 'غير محدد', techName || 'غير محدد', problem, Number(estimatedHours) || 2, rCost, pCost, totalCost]
         });
         res.json({ id: Number(result.lastInsertRowid), orderCode });
     } catch (err) {
