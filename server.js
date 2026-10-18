@@ -13,40 +13,43 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // الاتصال بقاعدة بيانات Turso السحابية
 const db = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN,
 });
+
+// قائمة العملاء المتصلين بالبث المباشر (للتنبيهات اللحظية)
+let sseClients = [];
 
 // تهيئة الجداول عند بدء التشغيل
 async function initDb() {
-  try {
-    await db.execute(`CREATE TABLE IF NOT EXISTS tickets (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        orderCode TEXT,
-        customerName TEXT,
-        phone TEXT,
-        deviceType TEXT,
-        deviceSerial TEXT,
-        problem TEXT,
-        status TEXT DEFAULT 'قيد الانتظار',
-        estimatedHours INTEGER DEFAULT 2,
-        techNotes TEXT DEFAULT '',
-        repairCost REAL DEFAULT 0,
-        partCost REAL DEFAULT 0,
-        totalCost REAL DEFAULT 0,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`);
+    try {
+        await db.execute(`CREATE TABLE IF NOT EXISTS tickets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            orderCode TEXT,
+            customerName TEXT,
+            phone TEXT,
+            deviceType TEXT,
+            deviceSerial TEXT,
+            problem TEXT,
+            status TEXT DEFAULT 'قيد الانتظار',
+            estimatedHours INTEGER DEFAULT 2,
+            techNotes TEXT DEFAULT '',
+            repairCost REAL DEFAULT 0,
+            partCost REAL DEFAULT 0,
+            totalCost REAL DEFAULT 0,
+            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`);
 
-    await db.execute(`CREATE TABLE IF NOT EXISTS inventory (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        quantity INTEGER,
-        price REAL
-    )`);
-    console.log('تم الاتصال بقاعدة البيانات السحابية Turso وجاهزية الجداول بنجاح.');
-  } catch (err) {
-    console.error('خطأ في تهيئة قاعدة البيانات:', err.message);
-  }
+        await db.execute(`CREATE TABLE IF NOT EXISTS inventory (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            quantity INTEGER,
+            price REAL
+        )`);
+        console.log('تم الاتصال بقاعدة البيانات السحابية Turso وجاهزية الجداول بنجاح.');
+    } catch (err) {
+        console.error('خطأ في تهيئة قاعدة البيانات:', err.message);
+    }
 }
 initDb();
 
@@ -58,6 +61,35 @@ function generateOrderCode() {
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     return `ORD-${dateStr}-${randomNum}`;
 }
+
+// دالة لتنبيه المتصفح بالتعديل الجديد فوراً عند تغيير حالة التذكرة
+function notifyTicketUpdate(ticket) {
+    sseClients.forEach(client => {
+        if (client.ticketId == ticket.id) {
+            client.res.write(`data: ${JSON.stringify(ticket)}\n\n`);
+        }
+    });
+}
+
+// مسح قناة الاتصال المباشر (SSE) لصفحة status.html
+app.get('/api/tickets/:id/stream', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    const clientId = Date.now();
+    const newClient = {
+        id: clientId,
+        ticketId: req.params.id,
+        res
+    };
+
+    sseClients.push(newClient);
+
+    req.on('close', () => {
+        sseClients = sseClients.filter(c => c.id !== clientId);
+    });
+});
 
 // APIs التذاكر
 app.get('/api/tickets', async (req, res) => {
@@ -104,12 +136,24 @@ app.put('/api/tickets/:id', async (req, res) => {
     const rCost = Number(repairCost) || 0;
     const pCost = Number(partCost) || 0;
     const totalCost = rCost + pCost;
+    const ticketId = req.params.id;
 
     try {
         const result = await db.execute({
             sql: `UPDATE tickets SET status = ?, estimatedHours = ?, techNotes = ?, repairCost = ?, partCost = ?, totalCost = ? WHERE id = ?`,
-            args: [status, Number(estimatedHours) || 0, techNotes || '', rCost, pCost, totalCost, req.params.id]
+            args: [status, Number(estimatedHours) || 0, techNotes || '', rCost, pCost, totalCost, ticketId]
         });
+
+        // جلب البيانات المحدثة وإرسالها فوراً للعميل عبر البث المباشر (SSE)
+        const updatedRes = await db.execute({
+            sql: 'SELECT * FROM tickets WHERE id = ?',
+            args: [ticketId]
+        });
+        
+        if (updatedRes.rows.length > 0) {
+            notifyTicketUpdate(updatedRes.rows[0]);
+        }
+
         res.json({ updated: result.rowsAffected });
     } catch (err) {
         res.status(500).json({ error: err.message });
