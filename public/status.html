@@ -206,7 +206,6 @@
         timerProgressBar: true
     });
 
-    // طلب إذن الإشعارات من العميل
     function checkNotificationPermission() {
         if ('Notification' in window && Notification.permission === 'default') {
             document.getElementById('notifyBanner').classList.remove('d-none');
@@ -366,7 +365,6 @@
                 if (updatedTicket && updatedTicket.id) {
                     renderTicketDetails(updatedTicket);
                     
-                    // إطلاق التنبيهات
                     Toast.fire({
                         icon: 'info',
                         title: '🔔 تم تحديث حالة صيانة جهازك الآن!'
@@ -383,11 +381,6 @@
             setTimeout(() => setupLiveUpdates(orderId), 5000);
         };
     }
-
-    fetchStatus();
-</script>
-</body>
-</html>
 
     fetchStatus();
 </script>
