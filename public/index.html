@@ -33,6 +33,7 @@
             font-family: 'Cairo', sans-serif;
             color: var(--text-main);
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .main-card { 
@@ -95,6 +96,7 @@
             border-radius: 10px;
             padding: 10px 14px;
             font-weight: 600;
+            font-size: 0.95rem;
         }
 
         .form-control:focus, .form-select:focus {
@@ -126,7 +128,6 @@
 
         .table-custom tbody tr:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-            transform: scale(1.002);
         }
 
         .table-custom td {
@@ -180,12 +181,13 @@
             color: #ffffff;
         }
 
-        /* Responsive Improvements */
-        @media (max-width: 768px) {
+        /* تحسينات الرسبونسف للأجهزة الصغيرة والتابلت */
+        @media (max-width: 992px) {
+            .container-fluid { padding-left: 10px; padding-right: 10px; }
             .main-card { padding: 16px !important; }
             .stat-box { padding: 12px; }
-            .nav-pills .nav-link { width: 100%; text-align: center; }
-            .table-responsive { border-radius: 12px; }
+            .nav-pills .nav-link { width: 100%; text-align: center; margin-bottom: 5px; }
+            .table-responsive { border-radius: 12px; overflow-x: auto; }
         }
 
         @media print {
@@ -205,7 +207,7 @@
 </head>
 <body class="p-2 p-md-4">
 
-<div class="container-fluid max-w-1200 animate__animated animate__fadeIn">
+<div class="container-fluid animate__animated animate__fadeIn" style="max-width: 1300px;">
     
     <!-- Top Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 p-3 main-card flex-wrap gap-2">
@@ -217,7 +219,7 @@
                 <h4 class="m-0 fw-bold text-dark">مركز صيانة أحمد شيتوس</h4>
             </div>
         </div>
-        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold fs-6">v4.0 Ultra Pro</span>
+        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold fs-6">v4.1 Pro</span>
     </div>
 
     <!-- Quick Stats Bar -->
@@ -303,6 +305,10 @@
                             </div>
                         </div>
                         <div class="mb-2">
+                            <label class="form-label small fw-bold text-secondary">اسم الفني المسؤول (المستلم):</label>
+                            <input type="text" id="techName" class="form-control" required placeholder="مثال: أحمد / إبراهيم">
+                        </div>
+                        <div class="mb-2">
                             <label class="form-label small fw-bold text-secondary">وصف العطل:</label>
                             <textarea id="devProblem" class="form-control" rows="2" required placeholder="وصف العطل..."></textarea>
                         </div>
@@ -349,7 +355,7 @@
                     <div class="mb-3">
                         <div class="input-group">
                             <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                            <input type="text" id="searchInput" class="form-control" placeholder="بحث باسم العميل، الهاتف، نوع الجهاز، رقم الطلب..." oninput="filterTickets()">
+                            <input type="text" id="searchInput" class="form-control" placeholder="بحث باسم العميل، الهاتف، نوع الجهاز، الفني، رقم الطلب..." oninput="filterTickets()">
                         </div>
                     </div>
 
@@ -358,10 +364,10 @@
                             <thead>
                                 <tr>
                                     <th>كود الطلب والعميل</th>
-                                    <th>تاريخ الاستلام</th>
+                                    <th>الفني واستلام</th>
                                     <th>التكلفة والوقت</th>
                                     <th>حالة الجهاز والتقدم</th>
-                                    <th>إجراءات المستندات والتنبيهات</th>
+                                    <th>الإجراءات والتنبيهات</th>
                                 </tr>
                             </thead>
                             <tbody id="ticketsTable"></tbody>
@@ -445,6 +451,7 @@
                 <div class="col-12 mt-1"><strong>اسم العميل:</strong> <span id="recCustName"></span></div>
                 <div class="col-12"><strong>رقم الهاتف:</strong> <span id="recCustPhone"></span></div>
                 <div class="col-12"><strong>الجهاز:</strong> <span id="recDevType"></span></div>
+                <div class="col-12"><strong>الفني المسؤول:</strong> <span id="recTechName"></span></div>
                 <div class="col-12"><strong>العطل:</strong> <span id="recProblem"></span></div>
                 <div class="col-6 mt-1 text-primary fw-bold"><strong>تكلفة الصيانة:</strong> <span id="recRepairCost"></span> ج.م</div>
                 <div class="col-6 mt-1 text-success fw-bold text-end"><strong>التكلفة الإجمالية:</strong> <span id="recTotalCost"></span> ج.م</div>
@@ -490,6 +497,7 @@
                 <div class="col-12 mt-1"><strong>اسم العميل:</strong> <span id="invCustName"></span></div>
                 <div class="col-12"><strong>رقم الهاتف:</strong> <span id="invCustPhone"></span></div>
                 <div class="col-12"><strong>الجهاز:</strong> <span id="invDevType"></span></div>
+                <div class="col-12"><strong>الفني المسؤول:</strong> <span id="invTechName"></span></div>
             </div>
 
             <table class="table table-bordered mb-3 small">
@@ -595,10 +603,12 @@
 
         const filtered = allTickets.filter(t => {
             const displayCode = (t.orderCode || `#ORD-${t.id}`).toLowerCase();
+            const techNameStr = (t.techName || '').toLowerCase();
             const matchesSearch = 
                 (t.customerName && t.customerName.toLowerCase().includes(query)) ||
                 (t.phone && t.phone.toLowerCase().includes(query)) ||
                 (t.deviceType && t.deviceType.toLowerCase().includes(query)) ||
+                techNameStr.includes(query) ||
                 displayCode.includes(query);
 
             const matchesStatus = (activeFilter === 'ALL' || t.status === activeFilter);
@@ -632,6 +642,7 @@
         tickets.forEach(t => {
             const displayCode = t.orderCode || `#ORD-${t.id}`;
             const prog = getProgressPercent(t.status);
+            const techLabel = t.techName || 'غير مسجل';
             
             tbody.innerHTML += `
                 <tr class="animate__animated animate__fadeIn">
@@ -641,7 +652,8 @@
                         <small class="badge bg-light text-dark border mt-1">${t.deviceType}</small>
                     </td>
                     <td>
-                        <div class="small fw-bold text-secondary"><i class="fa-regular fa-calendar me-1"></i>${formatDate(t.createdAt)}</div>
+                        <div class="small fw-bold text-dark"><i class="fa-solid fa-user-gear me-1 text-primary"></i> ${techLabel}</div>
+                        <div class="small text-muted mt-1"><i class="fa-regular fa-calendar me-1"></i>${formatDate(t.createdAt)}</div>
                     </td>
                     <td>
                         <div class="row g-1 mb-1">
@@ -682,10 +694,8 @@
         });
     }
 
-    // دالة إرسال إشعار الواتساب المباشر
     function sendWhatsAppNotification(ticket) {
         let phone = ticket.phone.trim();
-        // تنظيف رقم الهاتف وإضافة كود الدولة لمصر تلقائياً إن لم يكن موجوداً
         if (phone.startsWith('0')) {
             phone = '2' + phone;
         }
@@ -712,6 +722,7 @@
             phone: document.getElementById('custPhone').value,
             deviceType: document.getElementById('devType').value,
             deviceSerial: document.getElementById('devSerial').value,
+            techName: document.getElementById('techName').value,
             problem: document.getElementById('devProblem').value,
             repairCost: document.getElementById('repairCost').value,
             partCost: document.getElementById('partCost').value,
@@ -757,6 +768,7 @@
         document.getElementById('recCustName').innerText = ticket.customerName;
         document.getElementById('recCustPhone').innerText = ticket.phone;
         document.getElementById('recDevType').innerText = ticket.deviceType;
+        document.getElementById('recTechName').innerText = ticket.techName || 'غير مسجل';
         document.getElementById('recProblem').innerText = ticket.problem;
         
         document.getElementById('recRepairCost').innerText = ticket.repairCost || 0;
@@ -783,6 +795,7 @@
         document.getElementById('invCustName').innerText = ticket.customerName;
         document.getElementById('invCustPhone').innerText = ticket.phone;
         document.getElementById('invDevType').innerText = ticket.deviceType;
+        document.getElementById('invTechName').innerText = ticket.techName || 'غير مسجل';
         document.getElementById('invRepairCost').innerText = ticket.repairCost || 0;
         document.getElementById('invPartCost').innerText = ticket.partCost || 0;
         document.getElementById('invTotalCost').innerText = ticket.totalCost || 0;
