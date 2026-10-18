@@ -3,94 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تتبع حالة الجهاز المباشرة</title>
+    <title>تتبع حالة الصيانة المباشرة - مركز صيانة أحمد شيتوس</title>
+    <!-- Bootstrap RTL -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
-        body { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; font-family: 'Segoe UI', system-ui; }
-        .status-card { border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .timer-box { background: #eef2ff; border-radius: 12px; padding: 15px; }
-        .timer-num { font-size: 2rem; font-weight: bold; color: #1e3c72; }
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+
+        :root {
+            --bg-main: #f1f5f9;
+            --card-bg: #ffffff;
+            --primary-blue: #0284c7;
+            --text-dark: #0f172a;
+            --text-sub: #475569;
+            --border-light: #cbd5e1;
+        }
+
+        body { 
+            background-color: var(--bg-main); 
+            font-family: 'Cairo', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        .status-card { 
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .timer-box { 
+            background: #e0f2fe; 
+            border: 1px solid #bae6fd;
+            border-radius: 14px; 
+            padding: 16px; 
+        }
+
+        .timer-num { 
+            font-size: 2rem; 
+            font-weight: 800; 
+            color: var(--primary-blue); 
+            line-height: 1;
+        }
+
+        .progress {
+            height: 10px;
+            border-radius: 20px;
+            background-color: #e2e8f0;
+        }
+
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
     </style>
 </head>
-<body class="d-flex align-items-center justify-content-center p-3">
+<body class="d-flex align-items-center justify-content-center p-2 p-md-4">
 
-<div class="container" style="max-width: 500px;">
-    <div class="card status-card bg-white p-4 text-center">
-        <div class="mb-3">
-            <i class="fa-solid fa-mobile-screen-button fs-1 text-primary"></i>
-            <h4 class="fw-bold mt-2">تتبع حالة الصيانة</h4>
+<div class="container my-auto" style="max-width: 520px;">
+    <div class="card status-card p-4 animate__animated animate__fadeIn">
+        
+        <!-- Header -->
+        <div class="text-center mb-3 pb-3 border-bottom">
+            <div class="d-inline-flex align-items-center gap-2 mb-1">
+                <span class="live-dot"></span>
+                <small class="text-success fw-bold">متابعة صيانة مباشرة</small>
+            </div>
+            <h4 class="fw-bold text-dark m-0"><i class="fa-solid fa-microchip text-primary me-2"></i>مركز صيانة أحمد شيتوس</h4>
         </div>
         
-        <div id="loading">
-            <div class="spinner-border text-primary my-4"></div>
-            <p class="text-muted">جاري تحميل البيانات...</p>
+        <!-- Loading Spinner -->
+        <div id="loading" class="text-center py-4">
+            <div class="spinner-border text-primary my-2"></div>
+            <p class="text-muted fw-bold">جاري تحميل بيانات الجهاز...</p>
         </div>
 
+        <!-- Main Content Container -->
         <div id="content" class="d-none">
-            <span id="orderBadge" class="badge bg-primary fs-6 mb-3"></span>
             
-            <div class="text-start border rounded p-3 mb-3 bg-light">
-                <p class="mb-1"><strong><i class="fa-solid fa-user me-2 text-secondary"></i> العميل:</strong> <span id="cName"></span></p>
-                <p class="mb-1"><strong><i class="fa-solid fa-phone me-2 text-secondary"></i> الهاتف:</strong> <span id="cPhone"></span></p>
-                <p class="mb-1"><strong><i class="fa-solid fa-laptop me-2 text-secondary"></i> الجهاز:</strong> <span id="cDev"></span></p>
-                <p class="mb-1"><strong><i class="fa-solid fa-barcode me-2 text-secondary"></i> سيريال/SN:</strong> <span id="cSerial"></span></p>
-                <p class="mb-1"><strong><i class="fa-solid fa-calendar-check me-2 text-secondary"></i> وقت الاستلام:</strong> <span id="cCreated" class="fw-bold text-dark"></span></p>
-                <p class="mb-1"><strong><i class="fa-solid fa-triangle-exclamation me-2 text-secondary"></i> العطل:</strong> <span id="cProb"></span></p>
-                <p class="mb-0 text-success fw-bold"><strong><i class="fa-solid fa-receipt me-2"></i> التكلفة الإجمالية:</strong> <span id="cTotal"></span> ج.م</p>
+            <!-- Order Number Badge -->
+            <div class="text-center mb-3">
+                <span id="orderBadge" class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 fs-6 px-3 py-2 rounded-pill fw-bold"></span>
             </div>
 
-            <div class="my-3">
-                <h6 class="fw-bold text-muted">حالة الجهاز الحالية:</h6>
-                <div id="statusBox" class="p-3 rounded fw-bold fs-5 my-2"></div>
-            </div>
-
-            <div id="timerContainer" class="timer-box my-3 d-none">
-                <h6 class="fw-bold text-dark mb-1"><i class="fa-regular fa-clock me-1"></i> موعد التسليم المتوقع:</h6>
-                <div id="deliveryDate" class="fw-bold text-primary mb-2"></div>
-                <div class="d-flex justify-content-center align-items-center gap-3">
-                    <div>
-                        <div id="timerHours" class="timer-num">00</div>
-                        <small class="text-muted">ساعة</small>
+            <!-- Ticket Overview Info Box -->
+            <div class="info-box mb-3 text-start">
+                <div class="row g-2 small">
+                    <div class="col-12 border-bottom pb-2 mb-2">
+                        <strong class="text-secondary"><i class="fa-solid fa-user me-2 text-primary"></i> العميل:</strong> 
+                        <span id="cName" class="fw-bold text-dark fs-6"></span>
                     </div>
-                    <span class="fs-3 fw-bold">:</span>
-                    <div>
-                        <div id="timerMinutes" class="timer-num">00</div>
-                        <small class="text-muted">دقيقة</small>
+                    <div class="col-6">
+                        <strong class="text-secondary"><i class="fa-solid fa-phone me-1"></i> الهاتف:</strong> 
+                        <span id="cPhone" class="fw-bold"></span>
+                    </div>
+                    <div class="col-6">
+                        <strong class="text-secondary"><i class="fa-solid fa-mobile-screen me-1"></i> الجهاز:</strong> 
+                        <span id="cDev" class="fw-bold"></span>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <strong class="text-secondary"><i class="fa-solid fa-barcode me-1"></i> السيريال:</strong> 
+                        <span id="cSerial" class="fw-bold text-muted"></span>
+                    </div>
+                    <div class="col-12 mt-1">
+                        <strong class="text-secondary"><i class="fa-solid fa-calendar-check me-1"></i> وقت الاستلام:</strong> 
+                        <span id="cCreated" class="fw-bold text-dark"></span>
+                    </div>
+                    <div class="col-12 mt-1 border-top pt-2">
+                        <strong class="text-secondary"><i class="fa-solid fa-triangle-exclamation me-1 text-warning"></i> العطل المسجل:</strong> 
+                        <p id="cProb" class="mb-0 mt-1 fw-bold text-dark bg-white p-2 rounded border"></p>
+                    </div>
+                    <div class="col-12 mt-2 text-end">
+                        <span class="fs-6 fw-bold text-success"><i class="fa-solid fa-receipt me-1"></i> التكلفة الإجمالية: <span id="cTotal">0</span> ج.م</span>
                     </div>
                 </div>
             </div>
 
-            <div id="notesBox" class="alert alert-info d-none text-start mt-3">
-                <i class="fa-solid fa-comment-dots me-2"></i><strong>ملاحظة من الورشة:</strong>
-                <p id="notesText" class="mb-0 mt-1 small"></p>
+            <!-- Current Status Box & Progress -->
+            <div class="my-3 text-center">
+                <h6 class="fw-bold text-muted mb-2">حالة الصيانة الحالية:</h6>
+                <div id="statusBox" class="p-3 rounded-3 fw-bold fs-5 shadow-sm mb-2"></div>
+                
+                <!-- Live Progress Bar -->
+                <div class="progress my-2">
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Estimated Countdown Timer -->
+            <div id="timerContainer" class="timer-box my-3 text-center d-none">
+                <h6 class="fw-bold text-dark mb-1"><i class="fa-regular fa-clock me-1 text-primary"></i> الموعد المتوقع للتسليم:</h6>
+                <div id="deliveryDate" class="fw-bold text-primary small mb-3"></div>
+                <div class="d-flex justify-content-center align-items-center gap-3">
+                    <div>
+                        <div id="timerHours" class="timer-num">00</div>
+                        <small class="text-muted fw-bold">ساعة</small>
+                    </div>
+                    <span class="fs-3 fw-bold text-primary">:</span>
+                    <div>
+                        <div id="timerMinutes" class="timer-num">00</div>
+                        <small class="text-muted fw-bold">دقيقة</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workshop Tech Notes Box -->
+            <div id="notesBox" class="alert alert-warning border-warning d-none text-start mt-3">
+                <strong class="d-block mb-1"><i class="fa-solid fa-comment-dots me-2"></i>ملاحظات الفني والورشة:</strong>
+                <p id="notesText" class="mb-0 small fw-bold text-dark"></p>
+            </div>
+            
+            <div class="text-center mt-3">
+                <small class="text-muted">يتم تحديث الحالة تلقائياً بدون الحاجة لعمل إعادة تحميل للرحلة.</small>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    let currentTicketId = null;
+
     function formatDate(dateObj) {
         return dateObj.toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'short' });
     }
+
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000,
+        timerProgressBar: true
+    });
 
     async function fetchStatus() {
         const urlParams = new URLSearchParams(window.location.search);
         const orderId = urlParams.get('order');
 
         if (!orderId) {
-            document.getElementById('loading').innerHTML = '<div class="alert alert-danger">رقم الطلب غير صحيح!</div>';
+            document.getElementById('loading').innerHTML = '<div class="alert alert-danger fw-bold">رقم الطلب غير صحيح في الرابط!</div>';
             return;
         }
 
-        const res = await fetch(`/api/tickets/${orderId}`);
-        const ticket = await res.json();
+        currentTicketId = orderId;
 
-        if (!ticket || !ticket.id) {
-            document.getElementById('loading').innerHTML = '<div class="alert alert-warning">لم يتم العثور على الجهاز!</div>';
-            return;
+        try {
+            const res = await fetch(`/api/tickets/${orderId}`);
+            const ticket = await res.json();
+
+            if (!ticket || !ticket.id) {
+                document.getElementById('loading').innerHTML = '<div class="alert alert-warning fw-bold">لم يتم العثور على الجهاز المطلوب!</div>';
+                return;
+            }
+
+            renderTicketDetails(ticket);
+            setupLiveUpdates(orderId);
+
+        } catch (err) {
+            console.error('خطأ في جلب بيانات الحالة:', err);
+            document.getElementById('loading').innerHTML = '<div class="alert alert-danger fw-bold">حدث خطأ في الاتصال بالسيرفر!</div>';
         }
+    }
 
+    function renderTicketDetails(ticket) {
         document.getElementById('loading').classList.add('d-none');
         document.getElementById('content').classList.remove('d-none');
 
@@ -98,7 +237,7 @@
         document.getElementById('cName').innerText = ticket.customerName;
         document.getElementById('cPhone').innerText = ticket.phone;
         document.getElementById('cDev').innerText = ticket.deviceType;
-        document.getElementById('cSerial').innerText = ticket.deviceSerial || 'غير محدد';
+        document.getElementById('cSerial').innerText = ticket.deviceSerial || 'غير مسجل';
         document.getElementById('cProb').innerText = ticket.problem;
         document.getElementById('cTotal').innerText = ticket.totalCost || 0;
 
@@ -106,28 +245,45 @@
         document.getElementById('cCreated').innerText = formatDate(createdDate);
 
         const statusBox = document.getElementById('statusBox');
+        const progressBar = document.getElementById('progressBar');
+
         if (ticket.status === 'قيد الانتظار') {
-            statusBox.className = 'p-3 rounded fw-bold fs-5 bg-secondary text-white';
+            statusBox.className = 'p-3 rounded-3 fw-bold fs-5 bg-secondary text-white';
             statusBox.innerText = '⏳ قيد الانتظار في الورشة';
+            progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-secondary';
+            progressBar.style.width = '25%';
             setupTimer(createdDate, ticket.estimatedHours);
         } else if (ticket.status === 'جاري الصيانة') {
-            statusBox.className = 'p-3 rounded fw-bold fs-5 bg-warning text-dark';
-            statusBox.innerText = '🛠️ جاري الصيانة الآن';
+            statusBox.className = 'p-3 rounded-3 fw-bold fs-5 bg-warning text-dark';
+            statusBox.innerText = '🛠️ جاري الصيانة والعمل على الجهاز الآن';
+            progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-warning';
+            progressBar.style.width = '65%';
             setupTimer(createdDate, ticket.estimatedHours);
         } else if (ticket.status === 'جاهز للتسليم') {
-            statusBox.className = 'p-3 rounded fw-bold fs-5 bg-success text-white';
-            statusBox.innerText = '✅ الجهاز جاهز للتسليم!';
+            statusBox.className = 'p-3 rounded-3 fw-bold fs-5 bg-success text-white';
+            statusBox.innerText = '✅ تم إصلاح الجهاز وجاهز للتسليم!';
+            progressBar.className = 'progress-bar bg-success';
+            progressBar.style.width = '100%';
+            document.getElementById('timerContainer').classList.add('d-none');
         } else if (ticket.status === 'تم التسليم' || ticket.status === 'إنهاء واختفاء') {
-            statusBox.className = 'p-3 rounded fw-bold fs-5 bg-dark text-white';
-            statusBox.innerText = '🎉 تم استلام الجهاز بنجاح. شكراً لك!';
+            statusBox.className = 'p-3 rounded-3 fw-bold fs-5 bg-dark text-white';
+            statusBox.innerText = '🎉 تم استلام الجهاز بنجاح. شكراً لثقتكم!';
+            progressBar.className = 'progress-bar bg-dark';
+            progressBar.style.width = '100%';
+            document.getElementById('timerContainer').classList.add('d-none');
         } else if (ticket.status === 'رفض') {
-            statusBox.className = 'p-3 rounded fw-bold fs-5 bg-danger text-white';
-            statusBox.innerText = '❌ تعذر/تم رفض الصيانة';
+            statusBox.className = 'p-3 rounded-3 fw-bold fs-5 bg-danger text-white';
+            statusBox.innerText = '❌ تعذر/تم إيقاف الصيانة';
+            progressBar.className = 'progress-bar bg-danger';
+            progressBar.style.width = '100%';
+            document.getElementById('timerContainer').classList.add('d-none');
         }
 
         if (ticket.techNotes) {
             document.getElementById('notesBox').classList.remove('d-none');
             document.getElementById('notesText').innerText = ticket.techNotes;
+        } else {
+            document.getElementById('notesBox').classList.add('d-none');
         }
     }
 
@@ -160,6 +316,33 @@
 
         update();
         setInterval(update, 30000);
+    }
+
+    // إعداد التحديث المباشر من السيرفر (Real-time SSE)
+    function setupLiveUpdates(orderId) {
+        if (!window.EventSource) return;
+
+        const evtSource = new EventSource(`/api/tickets/${orderId}/stream`);
+
+        evtSource.onmessage = function(e) {
+            try {
+                const updatedTicket = JSON.parse(e.data);
+                if (updatedTicket && updatedTicket.id) {
+                    renderTicketDetails(updatedTicket);
+                    Toast.fire({
+                        icon: 'info',
+                        title: '🔔 تم تحديث حالة صيانة جهازك الآن!'
+                    });
+                }
+            } catch (err) {
+                console.error('خطأ في معالجة إشارة التحديث:', err);
+            }
+        };
+
+        evtSource.onerror = function() {
+            // إعادة المحاولة تلقائياً عند انقطاع الاتصال
+            setTimeout(() => setupLiveUpdates(orderId), 5000);
+        };
     }
 
     fetchStatus();
