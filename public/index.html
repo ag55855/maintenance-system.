@@ -168,6 +168,18 @@
             border-color: var(--primary-blue);
         }
 
+        .btn-whatsapp {
+            background-color: #25d366;
+            color: #ffffff;
+            border: none;
+            font-weight: 700;
+        }
+
+        .btn-whatsapp:hover {
+            background-color: #1da851;
+            color: #ffffff;
+        }
+
         /* Responsive Improvements */
         @media (max-width: 768px) {
             .main-card { padding: 16px !important; }
@@ -324,7 +336,7 @@
                         </h5>
                     </div>
 
-                    <!-- Filter Badges (ميزة الفلترة السريعة) -->
+                    <!-- Filter Badges -->
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         <span class="filter-badge active" onclick="setFilter('ALL', this)">الكل</span>
                         <span class="filter-badge" onclick="setFilter('قيد الانتظار', this)">قيد الانتظار</span>
@@ -349,7 +361,7 @@
                                     <th>تاريخ الاستلام</th>
                                     <th>التكلفة والوقت</th>
                                     <th>حالة الجهاز والتقدم</th>
-                                    <th>إجراءات المستندات</th>
+                                    <th>إجراءات المستندات والتنبيهات</th>
                                 </tr>
                             </thead>
                             <tbody id="ticketsTable"></tbody>
@@ -652,7 +664,6 @@
                             <option value="إنهاء واختفاء" ${t.status === 'إنهاء واختفاء' ? 'selected' : ''}>إنهاء واختفاء</option>
                         </select>
                         
-                        <!-- Progress Bar -->
                         <div class="progress my-1" style="height: 6px;">
                             <div class="progress-bar ${prog.color}" style="width: ${prog.percent}%"></div>
                         </div>
@@ -661,6 +672,7 @@
                         <button onclick="updateTicket(${t.id})" class="btn btn-sm btn-outline-primary w-100"><i class="fa-solid fa-rotate me-1"></i>تحديث البيانات</button>
                     </td>
                     <td>
+                        <button onclick="sendWhatsAppNotification(${JSON.stringify(t).replace(/"/g, '&quot;')})" class="btn btn-sm btn-whatsapp w-100 mb-1"><i class="fa-brands fa-whatsapp me-1"></i> إشعار واتساب</button>
                         <button onclick="showReceiptModal(${JSON.stringify(t).replace(/"/g, '&quot;')})" class="btn btn-sm btn-dark w-100 mb-1"><i class="fa-solid fa-receipt me-1"></i> إيصال QR</button>
                         <button onclick='showInvoice(${JSON.stringify(t).replace(/"/g, '&quot;')})' class="btn btn-sm btn-success w-100 mb-1"><i class="fa-solid fa-file-invoice-dollar me-1"></i> فاتورة</button>
                         <button onclick="copyStatusLink(${t.id})" class="btn btn-sm btn-outline-secondary w-100"><i class="fa-solid fa-copy me-1"></i> رابط المتابعة</button>
@@ -668,6 +680,23 @@
                 </tr>
             `;
         });
+    }
+
+    // دالة إرسال إشعار الواتساب المباشر
+    function sendWhatsAppNotification(ticket) {
+        let phone = ticket.phone.trim();
+        // تنظيف رقم الهاتف وإضافة كود الدولة لمصر تلقائياً إن لم يكن موجوداً
+        if (phone.startsWith('0')) {
+            phone = '2' + phone;
+        }
+
+        const currentStatus = document.getElementById(`status-${ticket.id}`).value || ticket.status;
+        const statusUrl = `${window.location.origin}/status.html?order=${ticket.id}`;
+        
+        const message = `أهلاً بك يا ${ticket.customerName} 👋\nنود إبلاغك بأن حالة صيانة جهازك (${ticket.deviceType}) في *مركز صيانة أحمد شيتوس* أصبحت الآن:\n*${currentStatus}*\n\nلمتابعة تفاصيل الجهاز والتكلفة عبر الرابط:\n${statusUrl}`;
+
+        const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
     }
 
     function copyStatusLink(id) {
