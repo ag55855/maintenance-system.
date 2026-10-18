@@ -19,13 +19,13 @@
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
 
         :root {
-            --bg-main: #f8fafc;
+            --bg-main: #f1f5f9;
             --card-bg: #ffffff;
             --primary-color: #0284c7;
             --primary-hover: #0369a1;
             --text-dark: #0f172a;
             --text-muted: #64748b;
-            --border-color: #e2e8f0;
+            --border-color: #cbd5e1;
         }
 
         body { 
@@ -39,38 +39,37 @@
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 16px; 
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
 
         .stat-card {
             background: #ffffff;
             border: 1px solid var(--border-color);
             border-radius: 14px;
-            padding: 16px;
+            padding: 14px 16px;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
         }
 
         .stat-icon {
-            width: 48px;
-            height: 48px;
+            width: 46px;
+            height: 46px;
             border-radius: 12px;
             background: rgba(2, 132, 199, 0.1);
             color: var(--primary-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             flex-shrink: 0;
         }
 
         .nav-pills .nav-link { 
             border-radius: 10px; 
             font-weight: 700; 
-            padding: 11px 24px; 
+            padding: 10px 20px; 
             color: var(--text-muted);
             background: #ffffff;
             border: 1px solid var(--border-color);
@@ -104,11 +103,11 @@
         }
 
         .table-custom thead th {
-            background-color: #f1f5f9;
+            background-color: #f8fafc;
             color: #334155;
             font-weight: 700;
             border-bottom: 2px solid var(--border-color);
-            padding: 14px 12px;
+            padding: 12px;
             white-space: nowrap;
         }
 
@@ -122,7 +121,7 @@
         }
 
         .table-custom td {
-            padding: 14px 12px;
+            padding: 12px;
             vertical-align: middle;
         }
 
@@ -132,13 +131,21 @@
             border: none;
             border-radius: 10px;
             font-weight: 700;
-            padding: 11px 18px;
+            padding: 10px 18px;
             transition: all 0.2s ease;
         }
 
         .btn-custom-primary:hover {
             background-color: var(--primary-hover);
             color: #ffffff;
+        }
+
+        /* Responsive Improvements */
+        @media (max-width: 768px) {
+            .app-card { padding: 16px !important; }
+            .stat-card { padding: 12px; }
+            .nav-pills .nav-link { width: 100%; text-align: center; margin-bottom: 8px; }
+            .table-responsive { overflow-x: auto; }
         }
 
         @media print {
@@ -168,13 +175,12 @@
             </div>
             <div>
                 <h4 class="m-0 fw-bold text-dark">مركز صيانة أحمد شيتوس</h4>
-                <small class="text-muted">نظام إدارة تذاكر الصيانة والورشة والمخزون</small>
             </div>
         </div>
         <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold">v4.0 Ultra Pro</span>
     </div>
 
-    <!-- Quick Stats Bar (إصلاح وتخصيص الإحصائيات) -->
+    <!-- Quick Stats Bar -->
     <div class="row g-3 mb-4">
         <div class="col-xl-3 col-sm-6">
             <div class="stat-card">
@@ -215,8 +221,8 @@
     </div>
 
     <!-- Tabs Navigation -->
-    <ul class="nav nav-pills mb-4">
-        <li class="nav-item me-2">
+    <ul class="nav nav-pills mb-4 flex-column flex-md-row">
+        <li class="nav-item me-md-2">
             <button class="nav-link active" onclick="switchTab('devicesTab', this)">
                 <i class="fa-solid fa-screwdriver-wrench me-2"></i>الأجهزة والورشة
             </button>
@@ -233,7 +239,7 @@
         <div class="row g-4">
             <!-- Form: New Ticket -->
             <div class="col-lg-4">
-                <div class="app-card p-4">
+                <div class="app-card p-3 p-md-4">
                     <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">
                         <i class="fa-solid fa-plus-circle me-2 text-primary"></i>استلام جهاز جديد
                     </h5>
@@ -281,16 +287,16 @@
                 </div>
             </div>
 
-            <!-- Devices Table (تم تعديل العناوين والتفاصيل بدقة) -->
+            <!-- Devices Table -->
             <div class="col-lg-8">
-                <div class="app-card p-4">
+                <div class="app-card p-3 p-md-4">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 border-bottom pb-2">
                         <h5 class="fw-bold m-0 text-dark">
                             <i class="fa-solid fa-list-check me-2 text-primary"></i>الأجهزة الحالية بالورشة
                         </h5>
                     </div>
 
-                    <!-- Search & Filters -->
+                    <!-- Search Controls -->
                     <div class="row g-2 mb-3">
                         <div class="col-md-7">
                             <div class="input-group">
@@ -335,7 +341,7 @@
         <div class="row g-4">
             <!-- Form: Add/Edit Inventory -->
             <div class="col-lg-4">
-                <div class="app-card p-4">
+                <div class="app-card p-3 p-md-4">
                     <h5 id="invTitle" class="fw-bold mb-3 text-dark border-bottom pb-2">إضافة قطعة جديدة</h5>
                     <form onsubmit="handleInventory(event)">
                         <input type="hidden" id="invId">
@@ -359,7 +365,7 @@
 
             <!-- Table: Inventory -->
             <div class="col-lg-8">
-                <div class="app-card p-4">
+                <div class="app-card p-3 p-md-4">
                     <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">قطع الغيار المتوفرة بالمخزون</h5>
                     
                     <div class="mb-3">
@@ -485,8 +491,8 @@
 <script>
     let receiptModalObj, invoiceModalObj;
     let allTickets = [];
-    let allInventory = [];
-    
+    closeInventory = [];
+
     const TIKTOK_URL = "https://www.tiktok.com/@ahmedshitoes?_r=1&_t=ZS-98ZwbImFbnR";
     const FACEBOOK_URL = "https://www.facebook.com/share/1Eub5wACgY/?mibextid=wwXIfr";
 
@@ -519,7 +525,6 @@
         return d.toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' });
     }
 
-    // تحديث إحصائيات الورشة المحدثة
     function updateStats() {
         document.getElementById('statActive').innerText = allTickets.filter(t => t.status !== 'تم التسليم' && t.status !== 'إنهاء واختفاء').length;
         document.getElementById('statReady').innerText = allTickets.filter(t => t.status === 'جاهز للتسليم').length;
