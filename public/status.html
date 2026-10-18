@@ -97,6 +97,12 @@
             <h4 class="fw-bold text-dark m-0"><i class="fa-solid fa-microchip text-primary me-2"></i>مركز صيانة أحمد شيتوس</h4>
         </div>
         
+        <!-- Enable Notification Alert Banner -->
+        <div id="notifyBanner" class="alert alert-info d-flex align-items-center justify-content-between p-2 mb-3 small d-none">
+            <span><i class="fa-solid fa-bell me-1"></i> فعل الإشعارات لتنبيهك فور جاهزية الجهاز</span>
+            <button onclick="requestNotificationPermission()" class="btn btn-sm btn-primary fw-bold">تفعيل</button>
+        </div>
+
         <!-- Loading Spinner -->
         <div id="loading" class="text-center py-4">
             <div class="spinner-border text-primary my-2"></div>
@@ -200,6 +206,36 @@
         timerProgressBar: true
     });
 
+    // طلب إذن الإشعارات من العميل
+    function checkNotificationPermission() {
+        if ('Notification' in window && Notification.permission === 'default') {
+            document.getElementById('notifyBanner').classList.remove('d-none');
+        }
+    }
+
+    function requestNotificationPermission() {
+        if ('Notification' in window) {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    document.getElementById('notifyBanner').classList.add('d-none');
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'تم تفعيل إشعارات الصيانة بنجاح!'
+                    });
+                }
+            });
+        }
+    }
+
+    function sendPushNotification(statusText) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('مركز صيانة أحمد شيتوس', {
+                body: `تحديث جديد لجهازك: ${statusText}`,
+                icon: 'https://cdn-icons-png.flaticon.com/512/1055/1055687.png'
+            });
+        }
+    }
+
     async function fetchStatus() {
         const urlParams = new URLSearchParams(window.location.search);
         const orderId = urlParams.get('order');
@@ -210,6 +246,7 @@
         }
 
         currentTicketId = orderId;
+        checkNotificationPermission();
 
         try {
             const res = await fetch(`/api/tickets/${orderId}`);
@@ -318,7 +355,6 @@
         setInterval(update, 30000);
     }
 
-    // إعداد التحديث المباشر من السيرفر (Real-time SSE)
     function setupLiveUpdates(orderId) {
         if (!window.EventSource) return;
 
@@ -329,10 +365,14 @@
                 const updatedTicket = JSON.parse(e.data);
                 if (updatedTicket && updatedTicket.id) {
                     renderTicketDetails(updatedTicket);
+                    
+                    // إطلاق التنبيهات
                     Toast.fire({
                         icon: 'info',
                         title: '🔔 تم تحديث حالة صيانة جهازك الآن!'
                     });
+
+                    sendPushNotification(updatedTicket.status);
                 }
             } catch (err) {
                 console.error('خطأ في معالجة إشارة التحديث:', err);
@@ -340,10 +380,14 @@
         };
 
         evtSource.onerror = function() {
-            // إعادة المحاولة تلقائياً عند انقطاع الاتصال
             setTimeout(() => setupLiveUpdates(orderId), 5000);
         };
     }
+
+    fetchStatus();
+</script>
+</body>
+</html>
 
     fetchStatus();
 </script>
