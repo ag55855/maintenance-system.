@@ -3,100 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مركز صيانة أحمد شيتوس</title>
+    <title>مركز صيانة أحمد شيتوس - لوحة التحكم الاحترافية</title>
     <!-- Bootstrap RTL -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Animate.css for smooth animations -->
+    <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <!-- QRCode JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- SweetAlert2 for Modern Toasts -->
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+
         :root {
-            --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-            --glass-bg: rgba(255, 255, 255, 0.92);
-            --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --accent-color: #38bdf8;
+            --accent-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
         }
+
         body { 
-            background: #f4f7fe; 
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color); 
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.1) 0px, transparent 50%);
+            font-family: 'Cairo', sans-serif;
+            color: var(--text-main);
             min-height: 100vh;
         }
-        .app-header {
-            background: #ffffff;
-            border-bottom: 2px solid #e9ecef;
+
+        .glass-card { 
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px; 
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(56, 189, 248, 0.3);
+            box-shadow: 0 25px 50px rgba(56, 189, 248, 0.1);
+        }
+
+        .stat-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
-            box-shadow: var(--glass-shadow);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
-        .card { 
-            border: none; 
-            border-radius: 16px; 
-            box-shadow: var(--glass-shadow);
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+            box-shadow: 0 8px 16px rgba(2, 132, 199, 0.3);
         }
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.1);
-        }
+
         .nav-pills .nav-link { 
             border-radius: 12px; 
             font-weight: 700; 
-            padding: 12px 24px; 
-            color: #495057;
+            padding: 12px 28px; 
+            color: var(--text-muted);
+            border: 1px solid transparent;
             transition: all 0.3s ease;
         }
+
+        .nav-pills .nav-link:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
         .nav-pills .nav-link.active { 
-            background: var(--primary-gradient); 
-            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.35);
+            background: var(--accent-gradient); 
+            color: #fff;
+            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.4);
+            border-color: rgba(255, 255, 255, 0.2);
         }
+
         .form-control, .form-select {
-            border-radius: 10px;
-            padding: 10px 14px;
-            border: 1px solid #ced4da;
-            transition: all 0.2s ease;
+            background: rgba(15, 23, 42, 0.8) !important;
+            border: 1px solid var(--border-color) !important;
+            color: var(--text-main) !important;
+            border-radius: 12px !important;
+            padding: 10px 16px;
         }
+
         .form-control:focus, .form-select:focus {
-            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
-            border-color: #0d6efd;
+            border-color: var(--accent-color) !important;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2) !important;
         }
-        .table {
+
+        .form-control::placeholder {
+            color: #64748b !important;
+        }
+
+        .table-custom {
+            color: var(--text-main);
             border-collapse: separate;
             border-spacing: 0 8px;
         }
-        .table tbody tr {
-            background: #ffffff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-            border-radius: 10px;
+
+        .table-custom tbody tr {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--border-color);
             transition: all 0.2s ease;
         }
-        .table tbody tr:hover {
+
+        .table-custom tbody tr:hover {
+            background: rgba(51, 65, 85, 0.7);
             transform: scale(1.005);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
         }
-        .table td, .table th {
-            padding: 14px;
+
+        .table-custom td {
+            padding: 16px;
             border: none;
+            vertical-align: middle;
         }
-        .table thead th {
+
+        .table-custom td:first-child { border-radius: 0 12px 12px 0; }
+        .table-custom td:last-child { border-radius: 12px 0 0 12px; }
+
+        .btn-gradient {
+            background: var(--accent-gradient);
+            color: #fff;
             border: none;
-            color: #6c757d;
+            border-radius: 12px;
             font-weight: 700;
-        }
-        .btn-action {
-            border-radius: 8px;
-            font-weight: 600;
+            padding: 10px 20px;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);
             transition: all 0.2s ease;
         }
+
+        .btn-gradient:hover {
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(2, 132, 199, 0.5);
+        }
+
+        /* Modal styling for printable areas */
+        .modal-content {
+            background: #ffffff;
+            color: #0f172a;
+            border-radius: 20px;
+        }
+
         @media print {
             body * { visibility: hidden; }
             #printableReceipt, #printableReceipt *, #printableInvoice, #printableInvoice * { visibility: visible; }
-            #printableReceipt, #printableInvoice { position: absolute; left: 0; top: 0; width: 100%; }
+            #printableReceipt, #printableInvoice { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
+                background: #fff !important;
+                color: #000 !important;
+            }
             .no-print { display: none !important; }
         }
     </style>
@@ -104,20 +182,66 @@
 <body class="p-3 p-md-4">
 
 <div class="container-fluid max-w-1200 animate__animated animate__fadeIn">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4 p-3 app-header">
-        <h3 class="m-0 text-primary fw-bold d-flex align-items-center">
-            <i class="fa-solid fa-microchip me-2 fa-spin-pulse" style="--fa-animation-duration: 3s;"></i>
-            <span>مركز صيانة أحمد شيتوس</span>
-        </h3>
-        <span class="badge bg-dark px-3 py-2 rounded-pill shadow-sm">v3.1 Pro</span>
+    
+    <!-- Top Bar Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 p-3 glass-card">
+        <div class="d-flex align-items-center gap-3">
+            <div class="stat-icon" style="width: 45px; height: 45px;">
+                <i class="fa-solid fa-microchip"></i>
+            </div>
+            <div>
+                <h4 class="m-0 fw-bold text-white">مركز صيانة أحمد شيتوس</h4>
+                <small class="text-muted">نظام إدارة الورشة والصيانة الذكي</small>
+            </div>
+        </div>
+        <span class="badge bg-primary bg-opacity-20 text-info px-3 py-2 rounded-pill border border-info border-opacity-20">v4.0 Ultra Pro</span>
+    </div>
+
+    <!-- Quick Stats Bar (الميزة الجديدة: الإحصائيات السريعة) -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-wrench"></i></div>
+                <div>
+                    <small class="text-muted d-block">أجهزة بالورشة</small>
+                    <h4 class="m-0 fw-bold" id="statActive">0</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);"><i class="fa-solid fa-circle-check"></i></div>
+                <div>
+                    <small class="text-muted d-block">جاهز للتسليم</small>
+                    <h4 class="m-0 fw-bold" id="statReady">0</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);"><i class="fa-solid fa-sack-dollar"></i></div>
+                <div>
+                    <small class="text-muted d-block">إجمالي الأرباح</small>
+                    <h4 class="m-0 fw-bold" id="statRevenue">0 ج.م</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);"><i class="fa-solid fa-boxes-stacked"></i></div>
+                <div>
+                    <small class="text-muted d-block">قطع المخزون</small>
+                    <h4 class="m-0 fw-bold" id="statInventory">0</h4>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Navigation Tabs -->
     <ul class="nav nav-pills mb-4">
         <li class="nav-item me-2">
             <button class="nav-link active" onclick="switchTab('devicesTab', this)">
-                <i class="fa-solid fa-wrench me-2"></i>الأجهزة والورشة
+                <i class="fa-solid fa-screwdriver-wrench me-2"></i>الأجهزة والورشة
             </button>
         </li>
         <li class="nav-item">
@@ -127,72 +251,74 @@
         </li>
     </ul>
 
-    <!-- Tab 1: Devices -->
+    <!-- Tab 1: Devices & Workshop -->
     <div id="devicesTab" class="tab-content animate__animated animate__fadeIn">
         <div class="row g-4">
-            <!-- Form: New Device -->
+            <!-- Form: New Ticket -->
             <div class="col-lg-4">
-                <div class="card p-4">
-                    <h5 class="fw-bold mb-3 text-secondary border-bottom pb-2">
-                        <i class="fa-solid fa-plus-circle me-2 text-primary"></i>استلام جهاز جديد
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold mb-3 text-white border-bottom border-secondary pb-2">
+                        <i class="fa-solid fa-plus-circle me-2 text-info"></i>استلام جهاز جديد
                     </h5>
                     <form onsubmit="saveTicket(event)">
-                        <div class="mb-2">
-                            <label class="form-label small fw-bold">اسم العميل:</label>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">اسم العميل:</label>
                             <input type="text" id="custName" class="form-control" required placeholder="أحمد محمود">
                         </div>
-                        <div class="mb-2">
-                            <label class="form-label small fw-bold">رقم الهاتف:</label>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">رقم الهاتف:</label>
                             <input type="text" id="custPhone" class="form-control" required placeholder="01xxxxxxxxx">
                         </div>
-                        <div class="row g-2 mb-2">
+                        <div class="row g-2 mb-3">
                             <div class="col-6">
-                                <label class="form-label small fw-bold">نوع الجهاز:</label>
+                                <label class="form-label small fw-bold text-muted">نوع الجهاز:</label>
                                 <input type="text" id="devType" class="form-control" required placeholder="آيفون 13">
                             </div>
                             <div class="col-6">
-                                <label class="form-label small fw-bold">السيريال:</label>
+                                <label class="form-label small fw-bold text-muted">السيريال:</label>
                                 <input type="text" id="devSerial" class="form-control" placeholder="SN / IMEI">
                             </div>
                         </div>
-                        <div class="mb-2">
-                            <label class="form-label small fw-bold">وصف العطل:</label>
-                            <textarea id="devProblem" class="form-control" rows="2" required placeholder="وصف العطل..."></textarea>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">وصف العطل:</label>
+                            <textarea id="devProblem" class="form-control" rows="2" required placeholder="وصف العطل بدقة..."></textarea>
                         </div>
-                        <div class="row g-2 mb-2">
+                        <div class="row g-2 mb-3">
                             <div class="col-6">
-                                <label class="form-label small fw-bold">سعر الصيانة (ج.م):</label>
+                                <label class="form-label small fw-bold text-muted">سعر الصيانة (ج.م):</label>
                                 <input type="number" id="repairCost" class="form-control" value="0">
                             </div>
                             <div class="col-6">
-                                <label class="form-label small fw-bold">سعر قطع الغيار (ج.م):</label>
+                                <label class="form-label small fw-bold text-muted">سعر قطع الغيار (ج.م):</label>
                                 <input type="number" id="partCost" class="form-control" value="0">
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">مدة الصيانة (ساعات):</label>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-muted">مدة الصيانة (ساعات):</label>
                             <input type="number" id="estHours" class="form-control" value="2" min="1" required>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm btn-action">
-                            <i class="fa-solid fa-save me-2"></i>تسجيل الجهاز
+                        <button type="submit" class="btn btn-gradient w-100 py-2">
+                            <i class="fa-solid fa-floppy-disk me-2"></i>تسجيل الجهاز بالورشة
                         </button>
                     </form>
                 </div>
             </div>
 
-            <!-- Table: Current Devices -->
+            <!-- Devices Table -->
             <div class="col-lg-8">
-                <div class="card p-4">
-                    <h5 class="fw-bold mb-3 text-secondary border-bottom pb-2">
-                        <i class="fa-solid fa-list-check me-2 text-primary"></i>الأجهزة الحالية بالورشة
-                    </h5>
-                    
+                <div class="glass-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 border-bottom border-secondary pb-2">
+                        <h5 class="fw-bold m-0 text-white">
+                            <i class="fa-solid fa-list-check me-2 text-info"></i>الأجهزة الحالية بالورشة
+                        </h5>
+                    </div>
+
                     <!-- Search & Filter Controls -->
                     <div class="row g-2 mb-3">
                         <div class="col-md-7">
                             <div class="input-group">
-                                <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                                <input type="text" id="searchInput" class="form-control" placeholder="بحث باسم العميل، الهاتف، نوع الجهاز..." oninput="filterTickets()">
+                                <span class="input-group-text bg-transparent border-secondary text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                <input type="text" id="searchInput" class="form-control" placeholder="بحث باسم العميل، الهاتف، نوع الجهاز، رقم الطلب..." oninput="filterTickets()">
                             </div>
                         </div>
                         <div class="col-md-5">
@@ -209,14 +335,14 @@
                     </div>
 
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
+                        <table class="table table-custom align-middle">
+                            <thead>
+                                <tr class="text-muted small">
                                     <th>الطلب والعميل</th>
-                                    <th>تاريخ الاستلام</th>
-                                    <th>الحسابات والوقت</th>
-                                    <th>تعديل الحالة</th>
-                                    <th>إجراءات</th>
+                                    <th>التاريخ</th>
+                                    <th>التكلفة والوقت</th>
+                                    <th>الحالة والخبرات</th>
+                                    <th>إجراءات الإيصال والفاتورة</th>
                                 </tr>
                             </thead>
                             <tbody id="ticketsTable"></tbody>
@@ -230,51 +356,51 @@
     <!-- Tab 2: Inventory -->
     <div id="inventoryTab" class="tab-content d-none animate__animated animate__fadeIn">
         <div class="row g-4">
-            <!-- Form: Add/Edit Inventory -->
+            <!-- Add Inventory Form -->
             <div class="col-lg-4">
-                <div class="card p-4">
-                    <h5 id="invTitle" class="fw-bold mb-3 text-secondary border-bottom pb-2">إضافة قطعة جديدة</h5>
+                <div class="glass-card p-4">
+                    <h5 id="invTitle" class="fw-bold mb-3 text-white border-bottom border-secondary pb-2">إضافة قطعة جديدة</h5>
                     <form onsubmit="handleInventory(event)">
                         <input type="hidden" id="invId">
-                        <div class="mb-2">
-                            <label class="form-label small fw-bold">اسم القطعة:</label>
-                            <input type="text" id="invName" class="form-control" required>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label small fw-bold">الكمية:</label>
-                            <input type="number" id="invQty" class="form-control" required>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">اسم القطعة:</label>
+                            <input type="text" id="invName" class="form-control" required placeholder="شاشة ايفون 13 مثلاً">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small fw-bold">السعر (ج.م):</label>
-                            <input type="number" step="0.01" id="invPrice" class="form-control" required>
+                            <label class="form-label small fw-bold text-muted">الكمية المتاحة:</label>
+                            <input type="number" id="invQty" class="form-control" required placeholder="5">
                         </div>
-                        <button type="submit" id="invBtn" class="btn btn-success w-100 fw-bold btn-action">حفظ القطعة</button>
-                        <button type="button" id="invCancel" class="btn btn-secondary w-100 mt-2 d-none btn-action" onclick="resetInvForm()">إلغاء التعديل</button>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-muted">السعر (ج.م):</label>
+                            <input type="number" step="0.01" id="invPrice" class="form-control" required placeholder="2500">
+                        </div>
+                        <button type="submit" id="invBtn" class="btn btn-gradient w-100">حفظ القطعة بالمخزون</button>
+                        <button type="button" id="invCancel" class="btn btn-outline-secondary w-100 mt-2 d-none" onclick="resetInvForm()">إلغاء التعديل</button>
                     </form>
                 </div>
             </div>
 
-            <!-- Table: Inventory Items -->
+            <!-- Inventory Table -->
             <div class="col-lg-8">
-                <div class="card p-4">
-                    <h5 class="fw-bold mb-3 text-secondary border-bottom pb-2">قطع الغيار المتوفرة</h5>
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold mb-3 text-white border-bottom border-secondary pb-2">قطع الغيار المتوفرة بالمخزون</h5>
                     
                     <div class="mb-3">
                         <div class="input-group">
-                            <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                            <input type="text" id="invSearchInput" class="form-control" placeholder="بحث باسم القطعة أو الكود..." oninput="filterInventory()">
+                            <span class="input-group-text bg-transparent border-secondary text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <input type="text" id="invSearchInput" class="form-control" placeholder="بحث باسم القطعة أو كودها..." oninput="filterInventory()">
                         </div>
                     </div>
 
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
+                        <table class="table table-custom align-middle">
+                            <thead>
+                                <tr class="text-muted small">
                                     <th>#</th>
                                     <th>اسم القطعة</th>
-                                    <th>الكمية</th>
-                                    <th>السعر</th>
-                                    <th>إجراءات</th>
+                                    <th>الكمية المتاحة</th>
+                                    <th>سعر البيع</th>
+                                    <th>إجراءات التحكم</th>
                                 </tr>
                             </thead>
                             <tbody id="inventoryTable"></tbody>
@@ -289,7 +415,7 @@
 <!-- Modal: Receipt -->
 <div class="modal fade" id="receiptModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content p-4" id="printableReceipt" style="border-radius: 16px;">
+        <div class="modal-content p-4" id="printableReceipt">
             <div class="text-center border-bottom pb-3 mb-3">
                 <h3 class="fw-bold text-primary m-0"><i class="fa-solid fa-microchip me-2"></i>إيصال استلام جهاز</h3>
                 <small class="text-muted fw-bold">مركز صيانة أحمد شيتوس</small>
@@ -324,19 +450,19 @@
             </div>
 
             <div class="text-center mt-3 no-print">
-                <button onclick="window.print()" class="btn btn-primary fw-bold px-4 me-2 btn-action"><i class="fa-solid fa-print me-2"></i>طباعة الإيصال</button>
-                <button type="button" class="btn btn-secondary btn-action" data-bs-dismiss="modal">إغلاق</button>
+                <button onclick="window.print()" class="btn btn-primary fw-bold px-4 me-2"><i class="fa-solid fa-print me-2"></i>طباعة الإيصال</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal: Invoice -->
+<!-- Modal: Invoice (تم تعديل اسمها لـ فاتورة فقط بناءً على طلبك) -->
 <div class="modal fade" id="invoiceModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content p-4" id="printableInvoice" style="border-radius: 16px;">
+        <div class="modal-content p-4" id="printableInvoice">
             <div class="text-center border-bottom pb-3 mb-3">
-                <h3 class="fw-bold text-primary m-0"><i class="fa-solid fa-shield-halved me-2"></i>كارت ضمان وفاتورة</h3>
+                <h3 class="fw-bold text-primary m-0"><i class="fa-solid fa-file-invoice-dollar me-2"></i>فاتورة صيانة</h3>
                 <small class="text-muted fw-bold">مركز صيانة أحمد شيتوس</small>
             </div>
             <div class="row mb-3 small">
@@ -347,40 +473,11 @@
                 <div class="col-12"><strong>الجهاز:</strong> <span id="invDevType"></span></div>
             </div>
 
-            <div class="no-print bg-light p-3 rounded mb-3 border">
-                <label class="form-label small fw-bold d-block mb-2"><i class="fa-solid fa-clock me-1"></i>اختر مدة الضمان:</label>
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="warrantyOption" id="w1m" value="شهر واحد" checked onchange="updateWarrantyText(this.value)">
-                        <label class="form-check-label small" for="w1m">شهر</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="warrantyOption" id="w2m" value="شهرين" onchange="updateWarrantyText(this.value)">
-                        <label class="form-check-label small" for="w2m">شهرين</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="warrantyOption" id="w3m" value="3 أشهر" onchange="updateWarrantyText(this.value)">
-                        <label class="form-check-label small" for="w3m">3 أشهر</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="warrantyOption" id="w6m" value="6 أشهر" onchange="updateWarrantyText(this.value)">
-                        <label class="form-check-label small" for="w6m">6 أشهر</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="warrantyOption" id="w1y" value="سنة كاملة" onchange="updateWarrantyText(this.value)">
-                        <label class="form-check-label small" for="w1y">سنة</label>
-                    </div>
-                </div>
-
-                <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-pen me-1"></i>ملاحظات الضمان:</label>
-                <textarea id="warrantyNotesInput" class="form-control form-control-sm" rows="2" placeholder="أدخل الملاحظات هنا..." oninput="updateWarrantyNotes(this.value)"></textarea>
-            </div>
-
             <table class="table table-bordered mb-3 small">
                 <thead class="table-light">
                     <tr>
                         <th>البيان</th>
-                        <th class="text-end">التكلفة / التفاصيل</th>
+                        <th class="text-end">التكلفة</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -392,64 +489,41 @@
                         <td>تكلفة قطع الغيار المستخدمة</td>
                         <td class="text-end fw-bold"><span id="invPartCost"></span> ج.م</td>
                     </tr>
-                    <tr>
-                        <td>مدة الضمان المعطاة</td>
-                        <td class="text-end fw-bold text-primary" id="invWarrantyDuration">شهر واحد</td>
-                    </tr>
                     <tr class="table-active fw-bold">
-                        <td>الإجمالي الكلي</td>
+                        <td>الإجمالي الكلي للفاتورة</td>
                         <td class="text-end text-success fs-6"><span id="invTotalCost"></span> ج.م</td>
                     </tr>
                 </tbody>
             </table>
 
-            <div id="warrantyNotesDisplay" class="alert alert-warning p-2 small mb-3">
-                <strong><i class="fa-solid fa-circle-info me-1"></i> ملاحظات الضمان:</strong>
-                <span id="warrantyNotesText" class="d-block mt-1">الضمان لا يشمل سوء الاستخدام، الكسر، أو تعرض الجهاز للسوائل.</span>
-            </div>
-
             <div class="text-center mt-3 no-print">
-                <button onclick="window.print()" class="btn btn-primary fw-bold px-4 me-2 btn-action"><i class="fa-solid fa-print me-2"></i>طباعة الفاتورة</button>
-                <button type="button" class="btn btn-secondary btn-action" data-bs-dismiss="modal">إغلاق</button>
+                <button onclick="window.print()" class="btn btn-primary fw-bold px-4 me-2"><i class="fa-solid fa-print me-2"></i>طباعة الفاتورة</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Live QR View -->
-<div class="modal fade" id="qrModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content text-center p-4" style="border-radius: 16px;">
-            <h4 class="fw-bold text-primary mb-2">QR Code متابعة الجهاز</h4>
-            <div id="modalQrCode" class="d-flex justify-content-center my-3"></div>
-            <h5 class="fw-bold mt-2" id="modalOrderNum"></h5>
-            <button type="button" class="btn btn-dark mt-3 btn-action" data-bs-dismiss="modal">إغلاق</button>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    let qrModalObj, invoiceModalObj, receiptModalObj;
+    let receiptModalObj, invoiceModalObj;
     let allTickets = [];
     let allInventory = [];
     
     const TIKTOK_URL = "https://www.tiktok.com/@ahmedshitoes?_r=1&_t=ZS-98ZwbImFbnR";
     const FACEBOOK_URL = "https://www.facebook.com/share/1Eub5wACgY/?mibextid=wwXIfr";
 
-    // Toast Notification Helper
     const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
-        timer: 3000,
+        timer: 2500,
         timerProgressBar: true
     });
 
     document.addEventListener("DOMContentLoaded", () => {
-        qrModalObj = new bootstrap.Modal(document.getElementById('qrModal'));
-        invoiceModalObj = new bootstrap.Modal(document.getElementById('invoiceModal'));
         receiptModalObj = new bootstrap.Modal(document.getElementById('receiptModal'));
+        invoiceModalObj = new bootstrap.Modal(document.getElementById('invoiceModal'));
 
         loadTickets();
         loadInventory();
@@ -468,12 +542,25 @@
         return d.toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' });
     }
 
+    // حساب الإحصائيات وتحديث كروت الإحصائية أعلى الصفحة
+    function updateStats() {
+        document.getElementById('statActive').innerText = allTickets.filter(t => t.status !== 'تم التسليم' && t.status !== 'إنهاء واختفاء').length;
+        document.getElementById('statReady').innerText = allTickets.filter(t => t.status === 'جاهز للتسليم').length;
+        
+        const totalRev = allTickets.reduce((sum, t) => sum + (Number(t.totalCost) || 0), 0);
+        document.getElementById('statRevenue').innerText = `${totalRev} ج.م`;
+
+        const totalQty = allInventory.reduce((sum, i) => sum + (Number(i.quantity) || 0), 0);
+        document.getElementById('statInventory').innerText = totalQty;
+    }
+
     async function loadTickets() {
         try {
             const res = await fetch('/api/tickets');
             const data = await res.json();
             allTickets = Array.isArray(data) ? data : [];
             renderTickets(allTickets);
+            updateStats();
         } catch(err) {
             console.error('خطأ في جلب البيانات:', err);
         }
@@ -513,12 +600,12 @@
             tbody.innerHTML += `
                 <tr class="animate__animated animate__fadeIn">
                     <td>
-                        <div class="fw-bold text-primary fs-6">${displayCode}</div>
-                        <div class="fw-bold small text-dark">${t.customerName} <span class="text-muted">(${t.phone})</span></div>
-                        <small class="badge bg-light text-dark border mt-1">${t.deviceType}</small>
+                        <div class="fw-bold text-info fs-6">${displayCode}</div>
+                        <div class="fw-bold small text-white">${t.customerName} <span class="text-muted">(${t.phone})</span></div>
+                        <small class="badge bg-secondary bg-opacity-20 text-info border border-info border-opacity-20 mt-1">${t.deviceType}</small>
                     </td>
                     <td>
-                        <div class="small fw-bold text-secondary"><i class="fa-regular fa-calendar me-1"></i>${formatDate(t.createdAt)}</div>
+                        <div class="small fw-bold text-muted"><i class="fa-regular fa-calendar me-1"></i>${formatDate(t.createdAt)}</div>
                     </td>
                     <td>
                         <div class="row g-1 mb-1">
@@ -527,7 +614,7 @@
                         </div>
                         <div class="small fw-bold text-success mb-1">الإجمالي: ${t.totalCost || 0} ج.م</div>
                         <div class="input-group input-group-sm mb-1">
-                            <span class="input-group-text bg-light">ساعات:</span>
+                            <span class="input-group-text bg-transparent border-secondary text-muted">ساعات:</span>
                             <input type="number" id="hrs-${t.id}" value="${t.estimatedHours || 2}" class="form-control">
                         </div>
                     </td>
@@ -541,11 +628,11 @@
                             <option value="إنهاء واختفاء" ${t.status === 'إنهاء واختفاء' ? 'selected' : ''}>إنهاء واختفاء</option>
                         </select>
                         <input type="text" id="notes-${t.id}" value="${t.techNotes || ''}" placeholder="ملاحظة الفني..." class="form-control form-control-sm mb-1">
-                        <button onclick="updateTicket(${t.id})" class="btn btn-sm btn-outline-primary w-100 btn-action"><i class="fa-solid fa-rotate me-1"></i>تحديث</button>
+                        <button onclick="updateTicket(${t.id})" class="btn btn-sm btn-outline-info w-100"><i class="fa-solid fa-rotate me-1"></i>تحديث</button>
                     </td>
                     <td>
-                        <button onclick="showReceiptModal(${JSON.stringify(t).replace(/"/g, '&quot;')})" class="btn btn-sm btn-dark w-100 mb-1 btn-action"><i class="fa-solid fa-receipt me-1"></i> إيصال QR</button>
-                        <button onclick='showInvoice(${JSON.stringify(t).replace(/"/g, '&quot;')})' class="btn btn-sm btn-success w-100 btn-action"><i class="fa-solid fa-shield-halved me-1"></i> ضمان/فاتورة</button>
+                        <button onclick="showReceiptModal(${JSON.stringify(t).replace(/"/g, '&quot;')})" class="btn btn-sm btn-dark border border-secondary w-100 mb-1"><i class="fa-solid fa-receipt me-1"></i> إيصال QR</button>
+                        <button onclick='showInvoice(${JSON.stringify(t).replace(/"/g, '&quot;')})' class="btn btn-sm btn-success w-100"><i class="fa-solid fa-file-invoice-dollar me-1"></i> فاتورة</button>
                     </td>
                 </tr>
             `;
@@ -576,7 +663,7 @@
             document.getElementById('repairCost').value = 0;
             document.getElementById('partCost').value = 0;
             document.getElementById('estHours').value = 2;
-            Toast.fire({ icon: 'success', title: 'تم تسجيل الجهاز بنجاح!' });
+            Toast.fire({ icon: 'success', title: 'تم تسجيل الجهاز بالورشة بنجاح!' });
             loadTickets();
         }
     }
@@ -593,7 +680,7 @@
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ status, estimatedHours, techNotes, repairCost, partCost })
         });
-        Toast.fire({ icon: 'success', title: 'تم تحديث بيانات التذكرة!' });
+        Toast.fire({ icon: 'success', title: 'تم تحديث التذكرة بنجاح!' });
         loadTickets();
     }
 
@@ -634,31 +721,17 @@
         document.getElementById('invPartCost').innerText = ticket.partCost || 0;
         document.getElementById('invTotalCost').innerText = ticket.totalCost || 0;
         
-        document.getElementById('w1m').checked = true;
-        updateWarrantyText('شهر واحد');
-        
-        const defaultNotes = "الضمان لا يشمل سوء الاستخدام، الكسر، أو تعرض الجهاز للسوائل.";
-        document.getElementById('warrantyNotesInput').value = defaultNotes;
-        updateWarrantyNotes(defaultNotes);
-
         invoiceModalObj.show();
     }
 
-    function updateWarrantyText(val) {
-        document.getElementById('invWarrantyDuration').innerText = val;
-    }
-
-    function updateWarrantyNotes(val) {
-        document.getElementById('warrantyNotesText').innerText = val || 'لا توجد ملاحظات إضافية.';
-    }
-
-    // Inventory Section
+    // Inventory
     async function loadInventory() {
         try {
             const res = await fetch('/api/inventory');
             const data = await res.json();
             allInventory = Array.isArray(data) ? data : [];
             renderInventory(allInventory);
+            updateStats();
         } catch(err) {
             console.error('خطأ في جلب بيانات المخزون:', err);
         }
@@ -686,12 +759,12 @@
             tbody.innerHTML += `
                 <tr class="animate__animated animate__fadeIn">
                     <td>${item.id}</td>
-                    <td class="fw-bold">${item.name}</td>
-                    <td><span class="badge bg-secondary px-3 py-2 fs-6">${item.quantity}</span></td>
-                    <td class="fw-bold text-success">${item.price} ج.م</td>
+                    <td class="fw-bold text-white">${item.name}</td>
+                    <td><span class="badge bg-info bg-opacity-20 text-info border border-info border-opacity-20 px-3 py-2 fs-6">${item.quantity}</span></td>
+                    <td class="fw-bold text-success fs-6">${item.price} ج.م</td>
                     <td>
-                        <button class="btn btn-sm btn-warning me-1 btn-action" onclick="editInv(${item.id}, '${item.name.replace(/'/g, "\\'")}', ${item.quantity}, ${item.price})"><i class="fa-solid fa-pen me-1"></i>تعديل</button>
-                        <button class="btn btn-sm btn-danger btn-action" onclick="deleteInv(${item.id})"><i class="fa-solid fa-trash me-1"></i>حذف</button>
+                        <button class="btn btn-sm btn-warning me-1" onclick="editInv(${item.id}, '${item.name.replace(/'/g, "\\'")}', ${item.quantity}, ${item.price})"><i class="fa-solid fa-pen me-1"></i>تعديل</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteInv(${item.id})"><i class="fa-solid fa-trash me-1"></i>حذف</button>
                     </td>
                 </tr>
             `;
@@ -717,7 +790,7 @@
         });
 
         resetInvForm();
-        Toast.fire({ icon: 'success', title: id ? 'تم تعديل القطعة!' : 'تم إضافة القطعة!' });
+        Toast.fire({ icon: 'success', title: id ? 'تم تعديل القطعة!' : 'تم إضافة القطعة للمخزون!' });
         loadInventory();
     }
 
@@ -737,7 +810,7 @@
         document.getElementById('invQty').value = '';
         document.getElementById('invPrice').value = '';
         document.getElementById('invTitle').innerText = 'إضافة قطعة جديدة';
-        document.getElementById('invBtn').innerText = 'حفظ القطعة';
+        document.getElementById('invBtn').innerText = 'حفظ القطعة بالمخزون';
         document.getElementById('invCancel').classList.add('d-none');
     }
 
